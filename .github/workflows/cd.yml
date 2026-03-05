@@ -36,3 +36,6 @@ jobs:
 
       - name: Build docker image
         run: "gcloud builds submit --tag europe-southwest1-docker.pkg.dev/notely-bootdev-489315/notely-ar-repo/notely:bootdev ."
+
+      - name: Deploy Google Cloud Run
+        run: "gcloud run deploy notely --image europe-southwest1-docker.pkg.dev/notely-bootdev-489315/notely-ar-repo/notely:bootdev --region europe-southwest1 --allow-unauthenticated --project notely-bootdev-489315 --max-instances=4"
