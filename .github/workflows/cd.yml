@@ -10,6 +10,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
     steps:
       - name: Check out code
         uses: actions/checkout@v6
@@ -23,19 +26,22 @@ jobs:
       - name: Build
         run: npm run build
 
-      - id: "auth"
-        uses: "google-github-actions/auth@v2"
+      - id: auth
+        uses: google-github-actions/auth@v2
         with:
           credentials_json: "${{ secrets.GCP_CREDENTIALS }}"
 
-      - name: "Set up Cloud SDK"
-        uses: "google-github-actions/setup-gcloud@v3"
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v3
 
-      - name: "Use gcloud CLI"
-        run: "gcloud info"
+      - name: Use gcloud CLI
+        run: gcloud info
 
       - name: Build docker image
-        run: "gcloud builds submit --tag europe-southwest1-docker.pkg.dev/notely-bootdev-489315/notely-ar-repo/notely:bootdev ."
+        run: gcloud builds submit --tag europe-southwest1-docker.pkg.dev/notely-bootdev-489315/notely-ar-repo/notely:bootdev .
+
+      - name: Migrate database
+        run: npm run db:migrate
 
       - name: Deploy Google Cloud Run
-        run: "gcloud run deploy notely --image europe-southwest1-docker.pkg.dev/notely-bootdev-489315/notely-ar-repo/notely:bootdev --region europe-southwest1 --allow-unauthenticated --project notely-bootdev-489315 --max-instances=4"
+        run: gcloud run deploy notely --image europe-southwest1-docker.pkg.dev/notely-bootdev-489315/notely-ar-repo/notely:bootdev --region europe-southwest1 --allow-unauthenticated --project notely-bootdev-489315 --max-instances=4
